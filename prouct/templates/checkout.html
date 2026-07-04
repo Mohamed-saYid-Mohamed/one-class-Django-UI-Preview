@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout | One Class Shop{% endblock %}
+
+{% block content %}
+<div class="glass-card rounded-4 p-4 p-lg-5 mb-5 shadow-sm">
+    <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--panel-border);">
+        <span class="badge badge-soft rounded-pill px-3 py-2 mb-2">Secure Checkout</span>
+        <h1 class="h2 fw-bold section-title mb-1">Place Your Order</h1>
+        <p class="text-soft mb-0">Fill in your delivery details below to complete your order.</p>
+    </div>
+
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="row g-4 g-lg-5">
+            <!-- Left Side Form -->
+            <div class="col-lg-7">
+                <h4 class="h5 fw-bold mb-4">Delivery Information</h4>
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 shadow-sm mb-4">
+                        {% for error in form.non_field_errors %}
+                            <div class="small fw-semibold">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="vstack gap-3">
+                    {% for field in form %}
+                        <div>
+                            <label for="{{ field.id_for_label }}" class="form-label fw-medium small">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-soft small mt-1">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in field.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Right Side Cart Recap -->
+            <div class="col-lg-5">
+                <div class="glass-card rounded-4 p-4 position-sticky" style="top: 96px; background-color: var(--bg); border: 1px solid var(--panel-border);">
+                    <h4 class="h5 fw-bold mb-3 text-dark">Order Recap</h4>
+                    <div class="vstack gap-3 mb-4">
+                        {% for item in cart.items.all %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-secondary rounded-pill badge-count">{{ item.quantity }}</span>
+                                <span class="small fw-semibold text-dark">{{ item.product.name }}</span>
+                            </div>
+                            <span class="small fw-bold text-dark">${{ item.total_price }}</span>
+                        </div>
+                        {% endfor %}
+                        <hr class="my-0 text-soft">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-soft">Subtotal</span>
+                            <span class="fw-bold text-dark">${{ cart.total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-soft">Delivery</span>
+                            <span class="text-success fw-bold">Free</span>
+                        </div>
+                        <hr class="my-0 text-soft">
+                        <div class="d-flex justify-content-between fs-5 fw-bold text-dark">
+                            <span>Total</span>
+                            <span class="text-primary">${{ cart.total_price }}</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-accent btn-lg w-100 py-2 fs-6">Place Order</button>
+                    <a href="{% url 'cart_detail' %}" class="btn btn-outline-secondary w-100 py-2 fs-6 mt-2">Return to Cart</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

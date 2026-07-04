@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders | One Class Shop{% endblock %}
+
+{% block content %}
+<div class="glass-card rounded-4 p-4 p-lg-5 mb-5 shadow-sm">
+    <div class="mb-4 pb-3" style="border-bottom: 1px solid var(--panel-border);">
+        <span class="badge badge-soft rounded-pill px-3 py-2 mb-2">User Dashboard</span>
+        <h1 class="h2 fw-bold section-title mb-1">My Orders</h1>
+        <p class="text-soft mb-0">Track delivery status, review details, reorder, or cancel pending purchases.</p>
+    </div>
+
+    {% if orders %}
+        <div class="vstack gap-4">
+            {% for order in orders %}
+                <div class="glass-card rounded-4 p-4" style="border: 1px solid var(--panel-border);">
+                    <div class="row align-items-center g-3">
+                        <!-- Order Metadata -->
+                        <div class="col-md-3">
+                            <div class="text-soft small mb-1">Order Identifier</div>
+                            <div class="fw-bold fs-5 text-dark mb-2">#{{ order.id }}</div>
+                            <div class="text-soft small mb-1">Date Placed</div>
+                            <div class="small fw-semibold text-dark">{{ order.created_at|date:"M d, Y h:i A" }}</div>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div class="col-md-2">
+                            <div class="text-soft small mb-2">Status</div>
+                            {% if order.status == 'Pending' %}
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Pending</span>
+                            {% elif order.status == 'Processing' %}
+                                <span class="badge bg-info text-dark px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Processing</span>
+                            {% elif order.status == 'Shipped' %}
+                                <span class="badge bg-primary px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Shipped</span>
+                            {% elif order.status == 'Delivered' %}
+                                <span class="badge bg-success px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Delivered</span>
+                            {% else %}
+                                <span class="badge bg-danger px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Cancelled</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Ordered products preview -->
+                        <div class="col-md-4">
+                            <div class="text-soft small mb-2">Items Overview</div>
+                            <div class="d-flex flex-column gap-2">
+                                {% for item in order.items.all %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        {% if item.product.image_url %}
+                                            {% with img=item.product.image_url.0 %}
+                                                {% if "http" in img or "/" in img %}
+                                                    <img src="{{ img }}" alt="{{ item.product.name }}" class="rounded-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+                                                {% else %}
+                                                    <img src="{{ MEDIA_URL }}{{ img }}" alt="{{ item.product.name }}" class="rounded-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% else %}
+                                            <img src="https://via.placeholder.com/50?text=No+Image" alt="{{ item.product.name }}" class="rounded-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+                                        {% endif %}
+                                        <span class="small fw-semibold text-dark">{{ item.quantity }}x {{ item.product.name }}</span>
+                                    </div>
+                                {% empty %}
+                                    {% if order.product %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if order.product.image_url %}
+                                                {% with img=order.product.image_url.0 %}
+                                                    {% if "http" in img or "/" in img %}
+                                                        <img src="{{ img }}" alt="{{ order.product.name }}" class="rounded-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+                                                    {% else %}
+                                                        <img src="{{ MEDIA_URL }}{{ img }}" alt="{{ order.product.name }}" class="rounded-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% else %}
+                                                <img src="https://via.placeholder.com/50?text=No+Image" alt="{{ order.product.name }}" class="rounded-2 shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+                                            {% endif %}
+                                            <span class="small fw-semibold text-dark">{{ order.quantity }}x {{ order.product.name }}</span>
+                                        </div>
+                                    {% else %}
+                                        <span class="small text-soft">No items list found</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Total Price & Actions -->
+                        <div class="col-md-3 text-md-end">
+                            <div class="text-soft small mb-1">Grand Total</div>
+                            <div class="fw-bold fs-4 text-primary mb-3">${{ order.total_price }}</div>
+                            <div class="d-flex gap-2 justify-content-md-end flex-wrap">
+                                <a href="{% url 'view_order_detail' order.id %}" class="btn btn-outline-primary btn-sm px-3">Details</a>
+                                <a href="{% url 'reorder' order.id %}" class="btn btn-accent btn-sm px-3">Reorder</a>
+                                {% if order.status == 'Pending' %}
+                                    <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger btn-sm px-3" onclick="return confirm('Are you sure you want to cancel Order #{{ order.id }}?');">Cancel</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="py-5 text-center text-soft">
+            <p class="mb-4 fs-5">You have not placed any orders yet.</p>
+            <a href="{% url 'index' %}" class="btn btn-accent px-4 py-2">Go Shopping</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

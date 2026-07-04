@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Details #{{ order.id }} | One Class Shop{% endblock %}
+
+{% block content %}
+<div class="glass-card rounded-4 p-4 p-lg-5 mb-5 shadow-sm">
+    <!-- Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3" style="border-bottom: 1px solid var(--panel-border);">
+        <div>
+            <span class="badge badge-soft rounded-pill px-3 py-2 mb-2">Order Information</span>
+            <h1 class="h2 fw-bold section-title mb-0">Order #{{ order.id }}</h1>
+            <p class="text-soft mb-0 small">Placed on {{ order.created_at|date:"F d, Y h:i A" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'my_orders' %}" class="btn btn-outline-primary btn-sm">Back to Dashboard</a>
+            <a href="{% url 'reorder' order.id %}" class="btn btn-accent btn-sm">Reorder Items</a>
+            {% if order.status == 'Pending' %}
+                <a href="{% url 'cancel_order' order.id %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to cancel this order?');">Cancel Order</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4 g-lg-5">
+        <!-- Products Table -->
+        <div class="col-lg-8">
+            <h4 class="h5 fw-bold mb-3">Ordered Items</h4>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="text-soft" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                            <th scope="col" style="border-bottom: 2px solid var(--panel-border); padding-bottom: 0.75rem;">Product</th>
+                            <th scope="col" style="border-bottom: 2px solid var(--panel-border); padding-bottom: 0.75rem;">Unit Price</th>
+                            <th scope="col" style="border-bottom: 2px solid var(--panel-border); padding-bottom: 0.75rem;" class="text-center">Quantity</th>
+                            <th scope="col" style="border-bottom: 2px solid var(--panel-border); padding-bottom: 0.75rem;" class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td style="border-bottom: 1px solid var(--panel-border); padding: 1.2rem 0;">
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if item.product.image_url %}
+                                        {% with img=item.product.image_url.0 %}
+                                            {% if "http" in img or "/" in img %}
+                                                <img src="{{ img }}" alt="{{ item.product.name }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="{{ MEDIA_URL }}{{ img }}" alt="{{ item.product.name }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <img src="https://via.placeholder.com/100?text=No+Image" alt="{{ item.product.name }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                    {% endif %}
+                                    <span class="fw-bold text-dark">{{ item.product.name }}</span>
+                                </div>
+                            </td>
+                            <td style="border-bottom: 1px solid var(--panel-border);" class="fw-medium">${{ item.price }}</td>
+                            <td style="border-bottom: 1px solid var(--panel-border);" class="text-center fw-semibold text-dark">{{ item.quantity }}</td>
+                            <td style="border-bottom: 1px solid var(--panel-border);" class="fw-bold text-primary text-end">${{ item.total_price }}</td>
+                        </tr>
+                        {% empty %}
+                            {% if order.product %}
+                            <tr>
+                                <td style="border-bottom: 1px solid var(--panel-border); padding: 1.2rem 0;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        {% if order.product.image_url %}
+                                            {% with img=order.product.image_url.0 %}
+                                                {% if "http" in img or "/" in img %}
+                                                    <img src="{{ img }}" alt="{{ order.product.name }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                                {% else %}
+                                                    <img src="{{ MEDIA_URL }}{{ img }}" alt="{{ order.product.name }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% else %}
+                                            <img src="https://via.placeholder.com/100?text=No+Image" alt="{{ order.product.name }}" class="rounded-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
+                                        <span class="fw-bold text-dark">{{ order.product.name }}</span>
+                                    </div>
+                                </td>
+                                <td style="border-bottom: 1px solid var(--panel-border);" class="fw-medium">${{ order.product.price }}</td>
+                                <td style="border-bottom: 1px solid var(--panel-border);" class="text-center fw-semibold text-dark">{{ order.quantity }}</td>
+                                <td style="border-bottom: 1px solid var(--panel-border);" class="fw-bold text-primary text-end">${{ order.total_price }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shipping & Order summary card -->
+        <div class="col-lg-4">
+            <div class="glass-card rounded-4 p-4 mb-4 shadow-sm" style="background-color: var(--bg); border: 1px solid var(--panel-border);">
+                <h4 class="h5 fw-bold mb-3 text-dark">Order Status</h4>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    {% if order.status == 'Pending' %}
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Pending Confirmation</span>
+                    {% elif order.status == 'Processing' %}
+                        <span class="badge bg-info text-dark px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Processing</span>
+                    {% elif order.status == 'Shipped' %}
+                        <span class="badge bg-primary px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Shipped</span>
+                    {% elif order.status == 'Delivered' %}
+                        <span class="badge bg-success px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Delivered</span>
+                    {% else %}
+                        <span class="badge bg-danger px-3 py-2 rounded-3 fw-bold" style="font-size: 0.8rem;">Cancelled</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-between fw-bold fs-5 text-dark mt-4 pt-3" style="border-top: 1px solid var(--panel-border);">
+                    <span>Grand Total</span>
+                    <span class="text-primary">${{ order.total_price }}</span>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-4 p-4 shadow-sm">
+                <h4 class="h5 fw-bold mb-4 text-dark">Delivery Details</h4>
+                <dl class="mb-0">
+                    <dt class="text-soft small fw-medium mb-1">Customer Name</dt>
+                    <dd class="fw-bold text-dark mb-3" style="font-size: 0.95rem;">{{ order.full_name }}</dd>
+                    
+                    <dt class="text-soft small fw-medium mb-1">Phone Number</dt>
+                    <dd class="fw-semibold text-dark mb-3" style="font-size: 0.95rem;">{{ order.phone }}</dd>
+                    
+                    <dt class="text-soft small fw-medium mb-1">Delivery Address</dt>
+                    <dd class="fw-semibold text-dark mb-3" style="font-size: 0.95rem;">{{ order.address }}</dd>
+                    
+                    <dt class="text-soft small fw-medium mb-1">City</dt>
+                    <dd class="fw-semibold text-dark mb-3" style="font-size: 0.95rem;">{{ order.city|default:"Not specified" }}</dd>
+                    
+                    <dt class="text-soft small fw-medium mb-1">Additional Notes</dt>
+                    <dd class="text-soft small mb-0" style="white-space: pre-wrap; font-size: 0.9rem;">{{ order.notes|default:"No notes left for this order." }}</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

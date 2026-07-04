@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Login | One Class Shop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mb-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-card rounded-4 p-4 p-lg-5 shadow-sm">
+            <div class="text-center mb-4">
+                <span class="badge badge-soft rounded-pill px-3 py-2 mb-2">Welcome Back</span>
+                <h2 class="h3 fw-bold section-title text-dark">Account Login</h2>
+                <p class="text-soft mb-0 small">Log in to manage your cart and view details of your orders.</p>
+            </div>
+
+            <form method="post" class="vstack gap-3">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 shadow-sm text-center">
+                        {% for error in form.non_field_errors %}
+                            <div class="small fw-semibold">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <label class="form-label fw-medium small" for="{{ form.username.id_for_label }}">Username</label>
+                    <input type="text" name="username" autofocus maxlength="150" class="form-control" placeholder="Enter username" required id="{{ form.username.id_for_label }}">
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="form-label fw-medium small" for="{{ form.password.id_for_label }}">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter password" required id="{{ form.password.id_for_label }}">
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1">{{ form.password.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-accent btn-lg w-100 mt-2 py-2 fs-6">Log In</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="mb-0 text-soft small">Don't have an account? <a href="{% url 'register' %}" class="fw-semibold">Sign up here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

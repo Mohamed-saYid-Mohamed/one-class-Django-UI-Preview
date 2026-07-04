@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}One Class Shop | Premium E-Commerce Catalog{% endblock %}
+
+{% block content %}
+<!-- Premium Promo Banner -->
+<section class="rounded-4 p-4 p-lg-5 mb-5 text-white shadow-sm" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <span class="badge bg-primary px-3 py-2 rounded-pill mb-3">Premium Collections</span>
+            <h1 class="display-5 fw-bold mb-3" style="font-family: 'Outfit', sans-serif; letter-spacing: -0.02em;">Welcome to One Class Shop</h1>
+            <p class="lead text-light opacity-75 mb-4">Discover our handpicked premium selection of high-quality products. Swift shipping, dedicated support, and safe transactions guaranteed.</p>
+            <a href="#catalog" class="btn btn-accent btn-lg px-4 fs-6">Explore Products</a>
+        </div>
+        <div class="col-lg-5">
+            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div class="text-light opacity-75 small mb-1">Available Inventory</div>
+                <div class="display-6 fw-bold text-white">{{ products|length }} Distinct Items</div>
+                <p class="small opacity-50 mb-0 mt-2">All products are dynamically tracked and synced with real-time stock balances.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Catalog -->
+<section id="catalog" class="mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="h3 section-title mb-0">Our Collection</h2>
+        <span class="text-soft small">{{ products|length }} products found</span>
+    </div>
+    
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-md-6 col-xl-4">
+            <div class="product-card h-100 overflow-hidden d-flex flex-column">
+                <!-- Product Image Handling -->
+                <div class="position-relative">
+                    {% if product.image_url %}
+                        {% with img=product.image_url.0 %}
+                            {% if "http" in img or "/" in img %}
+                                <img src="{{ img }}" class="w-100" style="height: 240px; object-fit: cover;" alt="{{ product.name }}">
+                            {% else %}
+                                <img src="{{ MEDIA_URL }}{{ img }}" class="w-100" style="height: 240px; object-fit: cover;" alt="{{ product.name }}">
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <img src="https://via.placeholder.com/600x400?text=No+Image+Available" class="w-100" style="height: 240px; object-fit: cover;" alt="{{ product.name }}">
+                    {% endif %}
+                    
+                    {% if product.stock == 0 %}
+                        <span class="position-absolute top-0 end-0 bg-danger text-white px-3 py-1 m-3 rounded-pill small fw-bold shadow-sm">Out of Stock</span>
+                    {% elif product.stock <= 3 %}
+                        <span class="position-absolute top-0 end-0 bg-warning text-dark px-3 py-1 m-3 rounded-pill small fw-bold shadow-sm">Only {{ product.stock }} left</span>
+                    {% endif %}
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-4 d-flex flex-column flex-grow-1">
+                    <h3 class="h5 fw-bold mb-2">{{ product.name }}</h3>
+                    <p class="text-soft small mb-3 flex-grow-1">{{ product.description|default:"Product specifications and customer guides are available on the detail page."|truncatechars:100 }}</p>
+                    
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <span class="fs-5 fw-bold text-primary">${{ product.price }}</span>
+                        <span class="text-soft small">Stock: {{ product.stock }} units</span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-auto">
+                        <a href="{% url 'product_detail' product.product_id %}" class="btn btn-outline-primary w-100 py-2">View details</a>
+                        {% if product.stock > 0 %}
+                            <button class="btn btn-accent w-100 py-2 add-to-cart-btn" data-product-id="{{ product.product_id }}">Add to Cart</button>
+                        {% else %}
+                            <button class="btn btn-secondary w-100 py-2" disabled>Out of stock</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="glass-card rounded-4 p-5 text-center text-soft">No products available yet.</div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

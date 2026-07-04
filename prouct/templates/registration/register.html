@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | One Class Shop{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mb-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-card rounded-4 p-4 p-lg-5 shadow-sm">
+            <div class="text-center mb-4">
+                <span class="badge badge-soft rounded-pill px-3 py-2 mb-2">Create Account</span>
+                <h2 class="h3 fw-bold section-title text-dark">User Registration</h2>
+                <p class="text-soft mb-0 small">Sign up to place orders and manage your profile details.</p>
+            </div>
+
+            <form method="post" class="vstack gap-3">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 shadow-sm">
+                        {% for error in form.non_field_errors %}
+                            <div class="small fw-semibold">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <div>
+                        <label class="form-label fw-medium small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text text-soft" style="font-size: 0.72rem; line-height: 1.3;">{{ field.help_text|safe }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-accent btn-lg w-100 mt-2 py-2 fs-6">Sign Up</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p class="mb-0 text-soft small">Already have an account? <a href="{% url 'login' %}" class="fw-semibold">Log in here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
